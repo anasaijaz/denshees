@@ -1,0 +1,40 @@
+{
+  "name": "denshees-backend",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "start": "NODE_ENV=production tsx src/index.ts"
+  },
+  "dependencies": {
+    "@denshees/database": "workspace:*",
+    "@hono/node-server": "^1.13.8",
+    "@prisma/adapter-pg": "^7.5.0",
+    "axios": "^1.9.0",
+    "bullmq": "^5.39.1",
+    "commander": "^14.0.0",
+    "dotenv": "^16.4.7",
+    "email-bounce-parser": "^1.0.22",
+    "he": "^1.2.0",
+    "hogan.js": "^3.0.2",
+    "hono": "^4.6.20",
+    "html-to-text": "^9.0.5",
+    "imapflow": "^1.2.16",
+    "ioredis": "^5.4.2",
+    "luxon": "^3.5.0",
+    "mailparser": "^3.9.4",
+    "nodemailer": "^6.10.0",
+    "pg": "^8.20.0",
+    "resend": "^4.5.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/he": "^1.2.3",
+    "@types/hogan.js": "^3.0.5",
+    "@types/html-to-text": "^9.0.4",
+    "@types/luxon": "^3.6.2",
+    "@types/mailparser": "^3.4.6",
+    "@types/node": "^20.17.16",
+    "@types/nodemailer": "^6.4.17",
+    "tsx": "^4.7.1"
+  }
+}

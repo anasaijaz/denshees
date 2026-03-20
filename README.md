@@ -1,159 +1,126 @@
-# Turborepo starter
+# Denshees
 
-This Turborepo starter is maintained by the Turborepo core team.
+Open-source cold email outreach platform with automated campaigns, CRM pipeline, lead management, and AI-powered features.
 
-## Using this example
+## Tech Stack
 
-Run the following command:
+| Layer    | Tech                                                                       |
+| -------- | -------------------------------------------------------------------------- |
+| Frontend | Next.js 14, React 18, Tailwind CSS, shadcn/ui, Framer Motion, SWR, Zustand |
+| Backend  | Hono, BullMQ, ioredis, ImapFlow                                            |
+| Database | PostgreSQL (Prisma ORM)                                                    |
+| Monorepo | pnpm workspaces + Turborepo                                                |
+| Infra    | Docker Compose, Redis                                                      |
 
-```sh
-npx create-turbo@latest
+## Project Structure
+
+```
+apps/
+  denshees-frontend/   → Next.js web app (port 3000)
+  denshees-backend/    → Hono API server (port 8100)
+packages/
+  database/            → Prisma schema & generated client (@denshees/database)
+  eslint-config/       → Shared ESLint configs
+  typescript-config/   → Shared tsconfig
+  ui/                  → Shared UI components
 ```
 
-## What's inside?
+## Prerequisites
 
-This Turborepo includes the following packages/apps:
+- **Node.js** >= 18
+- **pnpm** >= 9
+- **PostgreSQL** database (e.g., [Neon](https://neon.tech), [Supabase](https://supabase.com), or local)
+- **Redis** (local install or via Docker)
 
-### Apps and Packages
+## Quick Setup
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+### 1. Clone & install
 
 ```sh
-cd my-turborepo
-turbo build
+git clone https://github.com/your-username/denshees.git
+cd denshees
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 2. Configure environment variables
+
+Run the setup script to copy `.env.example` files:
 
 ```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+bash scripts/setup.sh
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Then fill in the values:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+**`apps/denshees-backend/.env`**
+| Variable | Description |
+|----------|-------------|
+| `PORT` | Server port (default: `8100`) |
+| `REDIS_HOST` | Redis host (`localhost` for local, `redis` for Docker) |
+| `REDIS_PORT` | Redis port (default: `6379`) |
+| `DATABASE_URL` | PostgreSQL connection string |
+
+**`apps/denshees-frontend/.env`**
+| Variable | Description |
+|----------|-------------|
+| `API_KEY` | Internal API key for backend auth |
+| `OPENAI_API_KEY` | OpenAI key for AI features |
+| `DODO_PAYMENTS_API_KEY` | Dodo Payments key |
+| `JWT_SECRET` | Secret for signing JWT tokens |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `SMTP_USER` | SMTP email for sending mail |
+| `SMTP_PASS` | SMTP password / app password |
+| `SUPPORT_NOTIFY_EMAILS` | Comma-separated notification recipients |
+
+### 3. Set up the database
 
 ```sh
-turbo build --filter=docs
+pnpm --filter @denshees/database exec prisma generate
+pnpm --filter @denshees/database exec prisma migrate dev
 ```
 
-Without global `turbo`:
+### 4. Start development
 
 ```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+# Start Redis (if not running)
+redis-server
+
+# Start all apps
+pnpm dev
 ```
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+Or start individually:
 
 ```sh
-cd my-turborepo
-turbo dev
+pnpm --filter denshees-frontend dev   # → http://localhost:3000
+pnpm --filter denshees-backend dev    # → http://localhost:8100
 ```
 
-Without global `turbo`, use your package manager:
+## Docker
+
+Run everything with Docker Compose:
 
 ```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+# Make sure .env files exist in both apps
+docker compose up --build
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+This starts:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+- **Frontend** on port `3000`
+- **Backend** on port `8100`
+- **Redis** on port `6379`
 
-```sh
-turbo dev --filter=web
-```
+## Scripts
 
-Without global `turbo`:
+| Command                 | Description                                  |
+| ----------------------- | -------------------------------------------- |
+| `pnpm dev`              | Start all apps in dev mode                   |
+| `pnpm build`            | Build all apps and packages                  |
+| `pnpm lint`             | Lint all packages                            |
+| `pnpm format`           | Format code with Prettier                    |
+| `bash scripts/setup.sh` | Copy env files, install deps, run migrations |
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+## License
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+MIT

@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: apps/denshees-backend/Dockerfile.monorepo
+    container_name: denshees_backend
+    ports:
+      - "8100:8100"
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+    env_file:
+      - apps/denshees-backend/.env
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/denshees-frontend/Dockerfile
+    container_name: denshees_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - BACKEND_URL=http://backend:8100
+    env_file:
+      - apps/denshees-frontend/.env
+    depends_on:
+      - backend
+    restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: denshees_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_data:

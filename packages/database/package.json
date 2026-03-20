@@ -1,0 +1,25 @@
+{
+  "name": "@denshees/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/generated/prisma/client.ts"
+  },
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "build": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.16",
+    "dotenv": "^16.4.7",
+    "prisma": "^7.5.0"
+  }
+}

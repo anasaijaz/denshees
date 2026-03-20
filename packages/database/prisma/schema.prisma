@@ -1,0 +1,386 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // Generated client is re-exported from this package
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// Users
+// ==========================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String?  @unique
+  name      String?
+  avatar    String?
+  timezone  String?
+  credits   Float?   @default(0)
+  aiCredits Float?   @default(0) @map("ai_credits")
+  isSetup   Boolean  @default(false) @map("issetup")
+  password  String
+  verified  Boolean  @default(false)
+  created   DateTime @default(now())
+  updated   DateTime @updatedAt
+
+  campaigns          Campaign[]
+  emailCredentials   EmailCredential[]
+  creditTransactions CreditTransaction[]
+  leadLists          LeadList[]
+  leads              Lead[]
+
+  @@map("users")
+}
+
+// ==========================================
+// Assets
+// ==========================================
+model Asset {
+  id      String   @id @default(cuid())
+  name    String?
+  field   String?
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@map("assets")
+}
+
+// ==========================================
+// Campaigns
+// ==========================================
+model Campaign {
+  id                  String           @id @default(cuid())
+  title               String?
+  userId              String?          @map("user")
+  user                User?            @relation(fields: [userId], references: [id])
+  maxStageCount       Int?             @map("max_stage_count")
+  status              String?          @default("PENDING")
+  daysInterval        Int?             @map("days_interval")
+  setuped             Boolean          @default(false)
+  desc                String?          @db.Text
+  emailDeliveryPeriod String?          @map("email_delivery_period")
+  ignoreVerification  Boolean          @default(false) @map("ignore_verification")
+  deleted             Boolean          @default(false)
+  dynamicSubject      Boolean          @default(false) @map("dynamic_subject")
+  isTrackingEnabled   Boolean          @default(false)
+  activeDays          Json?            @map("active_days")
+  created             DateTime         @default(now())
+  updated             DateTime         @updatedAt
+
+  campaignEmails               CampaignEmail[]
+  pitches                      PitchEmail[]
+  crmStages                    CrmStage[]
+  crmActivities                CrmActivity[]
+  crmDeals                     CrmDeal[]
+  campaignEmailCredentials     CampaignEmailCredential[]
+
+  @@map("campaigns")
+}
+
+// Many-to-many: Campaign <-> EmailCredential (for the `emails` multi-relation)
+model CampaignEmailCredential {
+  id                String          @id @default(cuid())
+  campaignId        String          @map("campaign_id")
+  campaign          Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  emailCredentialId String          @map("email_credential_id")
+  emailCredential   EmailCredential @relation(fields: [emailCredentialId], references: [id])
+
+  @@unique([campaignId, emailCredentialId])
+  @@map("campaign_email_credentials")
+}
+
+// ==========================================
+// Email Credentials
+// ==========================================
+model EmailCredential {
+  id              String    @id @default(cuid())
+  userId          String?   @map("user")
+  user            User?     @relation(fields: [userId], references: [id])
+  username        String?
+  password        String?
+  host            String?
+  port            Int?
+  secure          Boolean   @default(false)
+  status          String?   @default("Inactive")
+  imapEmail       String?
+  imapPassword    String?
+  imapHost        String?
+  dailyLimit      Int?
+  lastCheckedTime DateTime?
+  created         DateTime  @default(now())
+  updated         DateTime  @updatedAt
+
+  campaignEmails     CampaignEmail[]
+  campaignEmailCreds CampaignEmailCredential[]
+
+  @@map("email_credentials")
+}
+
+// ==========================================
+// Campaign Emails (contacts in a campaign)
+// ==========================================
+model CampaignEmail {
+  id                   String           @id @default(cuid())
+  name                 String?
+  email                String?
+  status               String?          @default("PENDING")
+  personalization      Json?
+  sentAt               DateTime?        @map("sent_at")
+  stage                Int?             @default(0)
+  campaignId           String?          @map("campaign")
+  campaign             Campaign?        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  opened               Int?             @default(0)
+  verified             String?          @default("PENDING")
+  verificationMessage  String?          @map("verification_message") @db.Text
+  verificationResponse String?          @map("verification_response") @db.Text
+  credId               String?          @map("cred")
+  cred                 EmailCredential? @relation(fields: [credId], references: [id])
+  created              DateTime         @default(now())
+  updated              DateTime         @updatedAt
+
+  campaignMessages CampaignMessage[]
+  campaignOpens    CampaignOpen[]
+  crmDeals         CrmDeal[]
+
+  @@index([email])
+  @@map("campaigns_email")
+}
+
+// ==========================================
+// Campaign Messages
+// ==========================================
+model CampaignMessage {
+  id              String         @id @default(cuid())
+  text            String?        @db.Text
+  pitchId         String?        @map("pitch")
+  pitch           PitchEmail?    @relation(fields: [pitchId], references: [id])
+  sent            Boolean        @default(false)
+  messageId       String?        @map("message_id")
+  campaignEmailId String?        @map("campaign_email")
+  campaignEmail   CampaignEmail? @relation(fields: [campaignEmailId], references: [id], onDelete: Cascade)
+  timestamp       DateTime?
+  created         DateTime       @default(now())
+  updated         DateTime       @updatedAt
+
+  @@map("campaign_messages")
+}
+
+// ==========================================
+// Campaign Opens (tracking)
+// ==========================================
+model CampaignOpen {
+  id              String         @id @default(cuid())
+  campaignEmailId String?        @map("campaign_email")
+  campaignEmail   CampaignEmail? @relation(fields: [campaignEmailId], references: [id])
+  created         DateTime       @default(now())
+  updated         DateTime       @updatedAt
+
+  @@map("campaign_opens")
+}
+
+// ==========================================
+// Pitches (email templates per campaign stage)
+// ==========================================
+model PitchEmail {
+  id             String    @id @default(cuid())
+  title          String?
+  subject        String?
+  campaignId     String?   @map("campaign")
+  campaign       Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  stage          Int?
+  message        String?   @db.Text
+  dynamicSubject String?   @map("dynamic_subject")
+  created        DateTime  @default(now())
+  updated        DateTime  @updatedAt
+
+  campaignMessages CampaignMessage[]
+
+  @@map("pitches_email")
+}
+
+// ==========================================
+// Credit Transactions
+// ==========================================
+model CreditTransaction {
+  id        String    @id @default(cuid())
+  userId    String?   @map("user")
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float?
+  timestamp DateTime?
+  type      String?
+  created   DateTime  @default(now())
+  updated   DateTime  @updatedAt
+
+  @@map("credit_transactions")
+}
+
+// ==========================================
+// CRM Activities
+// ==========================================
+model CrmActivity {
+  id          String    @id @default(cuid())
+  dealId      String?   @map("deal")
+  deal        CrmDeal?  @relation(fields: [dealId], references: [id])
+  campaignId  String?   @map("campaign")
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+  type        String?
+  description String?   @db.Text
+  fromStageId String?   @map("from_stage")
+  fromStage   CrmStage? @relation("fromStage", fields: [fromStageId], references: [id])
+  toStageId   String?   @map("to_stage")
+  toStage     CrmStage? @relation("toStage", fields: [toStageId], references: [id])
+  created     DateTime  @default(now())
+  updated     DateTime  @updatedAt
+
+  @@map("crm_activities")
+}
+
+// ==========================================
+// CRM Deals
+// ==========================================
+model CrmDeal {
+  id         String         @id @default(cuid())
+  leadId     String?        @map("lead")
+  lead       CampaignEmail? @relation(fields: [leadId], references: [id])
+  campaignId String?        @map("campaign")
+  campaign   Campaign?      @relation(fields: [campaignId], references: [id])
+  stageId    String?        @map("stage")
+  stage      CrmStage?      @relation(fields: [stageId], references: [id])
+  created    DateTime       @default(now())
+  updated    DateTime       @updatedAt
+
+  activities CrmActivity[]
+
+  @@map("crm_deals")
+}
+
+// ==========================================
+// CRM Stages
+// ==========================================
+model CrmStage {
+  id         String    @id @default(cuid())
+  name       String?
+  campaignId String?   @map("campaign")
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+  order      Int?
+  color      String?
+  isWon      Boolean   @default(false) @map("is_won")
+  isLost     Boolean   @default(false) @map("is_lost")
+  created    DateTime  @default(now())
+  updated    DateTime  @updatedAt
+
+  deals          CrmDeal[]
+  fromActivities CrmActivity[] @relation("fromStage")
+  toActivities   CrmActivity[] @relation("toStage")
+
+  @@map("crm_stages")
+}
+
+// ==========================================
+// Lead List Items
+// ==========================================
+model LeadListItem {
+  id              String    @id @default(cuid())
+  leadListId      String?   @map("lead_list")
+  leadList        LeadList? @relation(fields: [leadListId], references: [id])
+  name            String?
+  email           String?
+  website         String?
+  company         String?
+  personalization Json?
+  created         DateTime  @default(now())
+  updated         DateTime  @updatedAt
+
+  @@map("lead_list_items")
+}
+
+// ==========================================
+// Lead Lists
+// ==========================================
+model LeadList {
+  id          String   @id @default(cuid())
+  name        String?
+  description String?  @db.Text
+  userId      String?  @map("user")
+  user        User?    @relation(fields: [userId], references: [id])
+  created     DateTime @default(now())
+  updated     DateTime @updatedAt
+
+  items LeadListItem[]
+
+  @@map("lead_lists")
+}
+
+// ==========================================
+// Leads
+// ==========================================
+model Lead {
+  id      String   @id @default(cuid())
+  userId  String?  @map("user")
+  user    User?    @relation(fields: [userId], references: [id])
+  website String?
+  data    Json?
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+
+  @@map("leads")
+}
+
+
+// ==========================================
+// Template Campaign Pitches
+// ==========================================
+model TemplateCampaignPitch {
+  id                 String            @id @default(cuid())
+  title              String?
+  subject            String?
+  campaignTemplateId String?           @map("campaign_template")
+  campaignTemplate   TemplateCampaign? @relation(fields: [campaignTemplateId], references: [id])
+  stage              Int?
+  message            String?           @db.Text
+  created            DateTime          @default(now())
+  updated            DateTime          @updatedAt
+
+  @@map("template_campaign_pitches")
+}
+
+// ==========================================
+// Template Campaigns
+// ==========================================
+model TemplateCampaign {
+  id                  String   @id @default(cuid())
+  title               String?
+  maxStageCount       Int?     @map("max_stage_count")
+  daysInterval        Int?     @map("days_interval")
+  description         String?  @db.Text
+  emailDeliveryPeriod String?  @map("email_delivery_period")
+  created             DateTime @default(now())
+  updated             DateTime @updatedAt
+
+  pitches TemplateCampaignPitch[]
+
+  @@map("template_campaigns")
+}
+
+// ==========================================
+// Waitlist
+// ==========================================
+model Waitlist {
+  id       String   @id @default(cuid())
+  username String?
+  email    String
+  name     String?
+  timezone String?
+  created  DateTime @default(now())
+  updated  DateTime @updatedAt
+
+  @@index([email])
+  @@map("waitlist")
+}
+
