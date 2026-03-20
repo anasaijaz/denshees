@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: apps/denshees-backend/Dockerfile.monorepo
-    ports:
-      - "8100:8100"
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
