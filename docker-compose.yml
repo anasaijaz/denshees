@@ -3,11 +3,8 @@ services:
     build:
       context: .
       dockerfile: apps/denshees-backend/Dockerfile.monorepo
-    container_name: denshees_backend
     ports:
       - "8100:8100"
-    env_file:
-      - apps/denshees-backend/.env
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
@@ -22,11 +19,8 @@ services:
     build:
       context: .
       dockerfile: apps/denshees-frontend/Dockerfile
-    container_name: denshees_frontend
     ports:
       - "3000:3000"
-    env_file:
-      - apps/denshees-frontend/.env
     environment:
       - NODE_ENV=production
       - BACKEND_URL=http://backend:8100
@@ -44,10 +38,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: denshees_redis
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
