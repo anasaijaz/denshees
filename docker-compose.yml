@@ -6,11 +6,13 @@ services:
     container_name: denshees_backend
     ports:
       - "8100:8100"
+    env_file:
+      - apps/denshees-backend/.env
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
-    env_file:
-      - apps/denshees-backend/.env
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       redis:
         condition: service_healthy
@@ -23,11 +25,19 @@ services:
     container_name: denshees_frontend
     ports:
       - "3000:3000"
+    env_file:
+      - apps/denshees-frontend/.env
     environment:
       - NODE_ENV=production
       - BACKEND_URL=http://backend:8100
-    env_file:
-      - apps/denshees-frontend/.env
+      - DATABASE_URL=${DATABASE_URL}
+      - API_KEY=${API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DODO_PAYMENTS_API_KEY=${DODO_PAYMENTS_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SUPPORT_NOTIFY_EMAILS=${SUPPORT_NOTIFY_EMAILS}
     depends_on:
       - backend
     restart: always
