@@ -87,7 +87,7 @@ export async function fetchPitch(
 
   log(
     "INFO",
-    `Fetching pitch for campaign ${email.campaign} stage ${email.stage}`,
+    `Fetching pitch for campaign ${email.campaign?.id} stage ${email.stage}`,
     txId,
   );
 
@@ -95,14 +95,14 @@ export async function fetchPitch(
     const result = await prisma.pitchEmail.findFirst({
       where: {
         stage: email.stage,
-        campaignId: email.campaign,
+        campaignId: email.campaign?.id,
       },
     });
 
     if (!result) {
       log(
         "WARN",
-        `No pitch found for campaign ${email.campaign} stage ${email.stage}`,
+        `No pitch found for campaign ${email.campaign?.id} stage ${email.stage}`,
         txId,
       );
       return null;
@@ -114,7 +114,7 @@ export async function fetchPitch(
     log("ERROR", `Error fetching pitch`, txId, {
       error: error.message,
       stack: error.stack,
-      campaignId: email.campaign,
+      campaignId: email.campaign?.id,
       stage: email.stage,
     });
     return null;

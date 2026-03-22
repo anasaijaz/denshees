@@ -188,7 +188,7 @@ export async function sendCampaignEmail(
       });
     } else {
       // For follow-up emails (stage > 0), use the previously saved credential
-      const savedCredentialId = email.cred;
+      const savedCredentialId = email.credId;
       if (!savedCredentialId) {
         log(
           "ERROR",

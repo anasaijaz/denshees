@@ -3,7 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/index.ts",
-    "start": "NODE_ENV=production tsx src/index.ts"
+    "start": "NODE_ENV=production tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@denshees/database": "workspace:*",
@@ -35,6 +37,7 @@
     "@types/mailparser": "^3.4.6",
     "@types/node": "^20.17.16",
     "@types/nodemailer": "^6.4.17",
-    "tsx": "^4.7.1"
+    "tsx": "^4.7.1",
+    "vitest": "^4.1.0"
   }
 }

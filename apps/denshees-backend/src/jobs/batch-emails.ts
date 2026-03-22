@@ -112,7 +112,7 @@ function groupEmailsByCredential(
   const emailsByCredential = new Map<string, EmailRecord[]>();
 
   for (const email of campaignEmails) {
-    const credId = email.cred || "unassigned";
+    const credId = email.credId || "unassigned";
     if (!emailsByCredential.has(credId)) {
       emailsByCredential.set(credId, []);
     }

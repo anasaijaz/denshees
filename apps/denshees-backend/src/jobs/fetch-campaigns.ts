@@ -54,7 +54,7 @@ async function processCampaignJob() {
     // Filter emails based on the send delay (if any)
     // Stage 0 (fresh leads) should always be sent immediately, regardless of sent_at
     const validEmails = campaignEmails.filter(
-      (email: any) => (email: any) =>
+      (email: any) =>
         email.stage === 0 ||
         shouldSendToday(
           email.sentAt?.toISOString() ?? null,

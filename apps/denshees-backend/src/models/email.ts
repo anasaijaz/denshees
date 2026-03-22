@@ -8,12 +8,13 @@ export interface EmailRecord {
   name?: string;
   stage: number;
   status: string;
-  personalization: string;
-  cred?: string;
-  sentAt?: string;
-  error?: string;
+  personalization: any;
+  credId?: string | null;
+  sentAt?: Date | null;
+  campaignId?: string | null;
+  opened?: number;
+  verified?: string;
   campaign?: CampaignRecord;
-  campaignCredentials?: CredentialRecord[];
 }
 
 export interface PitchRecord {
@@ -22,18 +23,30 @@ export interface PitchRecord {
   message: string;
 }
 
+export interface CampaignEmailCredential {
+  id: string;
+  campaignId: string;
+  emailCredentialId: string;
+  emailCredential: CredentialRecord;
+}
+
 export interface CampaignRecord {
   id: string;
   maxStageCount: number;
-  activeDays?: string[];
+  activeDays?: any;
+  daysInterval?: number;
+  emailDeliveryPeriod?: string;
+  userId?: string;
   user?: UserRecord;
   isTrackingEnabled?: boolean;
+  campaignEmailCredentials?: CampaignEmailCredential[];
 }
 
 export interface UserRecord {
   id: string;
   email: string;
   credits: number;
+  timezone?: string;
 }
 
 export interface CredentialRecord {
