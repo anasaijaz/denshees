@@ -34,6 +34,7 @@ model User {
   creditTransactions CreditTransaction[]
   leadLists          LeadList[]
   leads              Lead[]
+  chatMessages       AgentChatMessage[]
 
   @@map("users")
 }
@@ -366,6 +367,24 @@ model TemplateCampaign {
   pitches TemplateCampaignPitch[]
 
   @@map("template_campaigns")
+}
+
+// ==========================================
+// Agent Chat
+// ==========================================
+model AgentChatMessage {
+  id        String   @id @default(cuid())
+  threadId  String   @map("thread_id")
+  role      String   // "user" | "assistant" | "tool"
+  content   String   @db.Text
+  toolName  String?  @map("tool_name")
+  userId    String   @map("user_id")
+  created   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, threadId])
+  @@map("agent_chat_messages")
 }
 
 // ==========================================

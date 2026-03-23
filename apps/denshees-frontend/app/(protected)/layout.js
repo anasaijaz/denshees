@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
+import AgentChat from "@/components/agent-chat";
 import useAuthStore from "@/store/auth.store";
 
 export default function ProtectedLayout({ children }) {
@@ -45,6 +46,7 @@ export default function ProtectedLayout({ children }) {
           {children}
         </main>
       </div>
+      <AgentChat />
     </div>
   );
 }
