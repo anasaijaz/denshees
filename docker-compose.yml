@@ -31,6 +31,7 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SUPPORT_NOTIFY_EMAILS=${SUPPORT_NOTIFY_EMAILS}
+      - AGENT_URL=http://agents:8050
     depends_on:
       - backend
     restart: always
