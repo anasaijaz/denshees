@@ -2,6 +2,8 @@
 
 Open-source cold email outreach platform with automated campaigns, CRM pipeline, lead management, and AI-powered features.
 
+![Denshees](intro.png)
+
 ## Tech Stack
 
 | Layer    | Tech                                                                       |
