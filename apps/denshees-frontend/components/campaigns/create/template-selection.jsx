@@ -55,6 +55,7 @@ export default function CampaignTemplateSelection({
             {/* "Create from Scratch" Item */}
             <CarouselItem className="basis-full sm:basis-1/3 lg:basis-1/4 p-2">
               <div
+                id="tour-create-from-scratch"
                 className="p-2 h-64 rounded-none flex items-center justify-center border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-neutral-100 duration-300 cursor-pointer"
                 onClick={onSelectCustom}
               >

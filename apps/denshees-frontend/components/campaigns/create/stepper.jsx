@@ -70,6 +70,7 @@ export default function Stepper({ steps, onComplete, loading = false }) {
           Previous
         </Button>
         <Button
+          id="tour-stepper-next"
           onClick={handleNext}
           disabled={loading}
           className="border-black"

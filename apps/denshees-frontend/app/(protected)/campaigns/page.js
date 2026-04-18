@@ -83,7 +83,7 @@ export default function CampaignsPage() {
           <p className="text-gray-600 mt-1">Manage your email campaigns</p>
         </div>
         <Link href="/campaigns/create">
-          <Button>
+          <Button id="tour-new-campaign-btn">
             <PlusIcon className="w-4 h-4 mr-2" />
             New Campaign
           </Button>

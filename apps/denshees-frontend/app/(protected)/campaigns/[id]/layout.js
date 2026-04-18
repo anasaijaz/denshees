@@ -111,10 +111,10 @@ export default function CampaignLayout({ children }) {
 
   // Define tabs
   const tabs = [
-    { name: "Leads", href: `/campaigns/${campaignId}` },
-    { name: "CRM", href: `/campaigns/${campaignId}/crm` },
-    { name: "Builder", href: `/campaigns/${campaignId}/builder` },
-    { name: "Analytics", href: `/campaigns/${campaignId}/analytics` },
+    { name: "Leads", href: `/campaigns/${campaignId}`, tourId: "tour-tab-leads" },
+    { name: "CRM", href: `/campaigns/${campaignId}/crm`, tourId: "tour-tab-crm" },
+    { name: "Builder", href: `/campaigns/${campaignId}/builder`, tourId: "tour-tab-builder" },
+    { name: "Analytics", href: `/campaigns/${campaignId}/analytics`, tourId: "tour-tab-analytics" },
     { name: "Settings", href: `/campaigns/${campaignId}/settings` },
   ];
 
@@ -161,6 +161,7 @@ export default function CampaignLayout({ children }) {
               {tabs.map((tab) => (
                 <Link
                   key={tab.name}
+                  id={tab.tourId}
                   href={tab.href}
                   className={`inline-flex items-center px-4 py-2 border-b-2 text-sm font-medium ${
                     isTabActive(tab.href)

@@ -64,6 +64,7 @@ const SettingsStep = ({
         <div className="flex items-center justify-start w-full">
           <p className="py-2 pr-2">0</p>
           <Slider
+            id="tour-followups-slider"
             value={followUpsSliderValue}
             onValueChange={(e) => setFollowUpsSliderValue(e)}
             min={0}
@@ -82,6 +83,7 @@ const SettingsStep = ({
         <div className="flex items-center justify-start w-full">
           <p className="py-2 pr-2">1</p>
           <Slider
+            id="tour-delay-slider"
             value={delaySliderValue}
             onValueChange={(e) => setDelaySliderValue(e)}
             min={1}
@@ -95,7 +97,7 @@ const SettingsStep = ({
     </div>
     <div className="w-full md:w-[60%] flex items-center justify-start gap-4">
       <Select value={time} onValueChange={(value) => setTime(value)}>
-        <SelectTrigger className="w-full text-md border-black">
+        <SelectTrigger id="tour-send-time" className="w-full text-md border-black">
           <SelectValue
             className="font-bold"
             placeholder="When should the emails be sent?"
