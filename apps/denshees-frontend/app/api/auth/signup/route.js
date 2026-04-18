@@ -38,8 +38,8 @@ export async function POST(request) {
         password: hashedPassword,
         name: name || null,
         timezone: timezone || null,
-        credits: 0,
-        aiCredits: 0,
+        credits: 500,
+        aiCredits: 500,
       },
     });
 
