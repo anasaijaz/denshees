@@ -1,0 +1,43 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            # Clone repo on first deploy, pull on subsequent ones
+            if [ ! -d /app ]; then
+              git clone https://github.com/anasaijaz/denshees.git /app
+            fi
+
+            cd /app
+            git pull origin main
+
+            # Write .env file from secrets
+            cat > .env <<EOF
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            API_KEY=${{ secrets.API_KEY }}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            DODO_PAYMENTS_API_KEY=${{ secrets.DODO_PAYMENTS_API_KEY }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            SMTP_USER=${{ secrets.SMTP_USER }}
+            SMTP_PASS=${{ secrets.SMTP_PASS }}
+            SUPPORT_NOTIFY_EMAILS=${{ secrets.SUPPORT_NOTIFY_EMAILS }}
+            LANGSMITH_API_KEY=${{ secrets.LANGSMITH_API_KEY }}
+            LANGSMITH_PROJECT=${{ secrets.LANGSMITH_PROJECT }}
+            REDIS_PORT=6379
+            EOF
+
+            docker compose up -d --build
