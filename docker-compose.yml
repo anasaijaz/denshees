@@ -1,4 +1,34 @@
 services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginx_certs:/etc/nginx/certs
+      - nginx_vhost:/etc/nginx/vhost.d
+      - nginx_html:/usr/share/nginx/html
+    networks:
+      - proxy
+    restart: always
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx_certs:/etc/nginx/certs
+      - nginx_vhost:/etc/nginx/vhost.d
+      - nginx_html:/usr/share/nginx/html
+      - acme_data:/etc/acme.sh
+    environment:
+      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
+    depends_on:
+      - nginx-proxy
+    networks:
+      - proxy
+    restart: always
+
   backend:
     build:
       context: .
@@ -12,14 +42,14 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    networks:
+      - internal
     restart: always
 
   frontend:
     build:
       context: .
       dockerfile: apps/denshees-frontend/Dockerfile
-    ports:
-      - "3001:3000"
     environment:
       - NODE_ENV=production
       - BACKEND_URL=http://backend:8100
@@ -32,16 +62,22 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - SUPPORT_NOTIFY_EMAILS=${SUPPORT_NOTIFY_EMAILS}
       - AGENT_URL=http://agents:8050
+      # nginx-proxy picks these up automatically
+      - VIRTUAL_HOST=app.denshees.com
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=app.denshees.com
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     depends_on:
       - backend
+    networks:
+      - proxy     # so nginx-proxy can reach it
+      - internal  # so it can reach backend + agents
     restart: always
 
   agents:
     build:
       context: .
       dockerfile: apps/agents/Dockerfile
-    ports:
-      - "8050:8050"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - BACKEND_URL=http://frontend:3000
@@ -50,6 +86,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - frontend
+    networks:
+      - internal
     restart: always
 
   redis:
@@ -62,6 +100,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - internal
+
+networks:
+  proxy:
+    driver: bridge
+  internal:
+    driver: bridge
 
 volumes:
   redis_data:
+  nginx_certs:
+  nginx_vhost:
+  nginx_html:
+  acme_data:
