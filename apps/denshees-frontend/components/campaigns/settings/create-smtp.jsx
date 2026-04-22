@@ -35,9 +35,9 @@ const ProviderSelection = ({ onSelect }) => {
       logo: <EmailLogo src={GmailSVG} />,
       defaults: {
         host: "smtp.gmail.com",
-        port: 465,
+        port: 587,
         imap_host: "imap.gmail.com",
-        secure: true,
+        secure: false,
       },
     },
     {
