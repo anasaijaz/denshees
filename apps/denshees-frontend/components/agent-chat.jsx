@@ -325,7 +325,7 @@ export default function AgentChat() {
               setButtonContentVisible(false);
               setIsOpen(true);
             }}
-            className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 border transition-colors duration-50 ${
+            className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center gap-2 px-4 py-3 border transition-colors duration-50 ${
               buttonContentVisible
                 ? "bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-800"
                 : "bg-white text-transparent border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
@@ -352,7 +352,7 @@ export default function AgentChat() {
       {/* Chat panel */}
       {isOpen && (
         <Flipped flipId="agent-chat" onComplete={() => setContentVisible(true)}>
-          <div className="fixed bottom-6 right-6 z-50 w-[400px] max-h-[560px] bg-white border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden">
+          <div className="fixed bottom-20 right-2 left-2 md:bottom-6 md:right-6 md:left-auto z-50 w-auto md:w-[400px] max-h-[560px] bg-white border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden">
             <div
               className={`flex flex-col flex-1 overflow-hidden transition-opacity duration-75 ${
                 contentVisible ? "opacity-100" : "opacity-0"

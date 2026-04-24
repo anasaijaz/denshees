@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -64,12 +64,32 @@ const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
     label: "",
     value: "",
   });
+  const defaultsApplied = useRef(false);
 
   // Fetch pitches to extract personalization variables
   const { data: pitchesData } = useSWR(
     campaign ? `/api/pitches?campaign=${campaign}` : null,
     fetcher,
   );
+
+  // Fetch contacts to get the last personalization as default
+  const { data: contactsData } = useSWR(
+    open && campaign ? `/api/contacts?campaign=${campaign}` : null,
+    fetcher,
+  );
+
+  const lastPersonalization = useMemo(() => {
+    if (!contactsData?.length) return {};
+    const withP = contactsData.filter(
+      (c) => c.personalization && Object.keys(c.personalization).length > 0,
+    );
+    if (!withP.length) return {};
+    return withP[withP.length - 1].personalization;
+  }, [contactsData]);
+
+  useEffect(() => {
+    if (!open) defaultsApplied.current = false;
+  }, [open]);
 
   // Extract unique variable names from all pitch messages/subjects
   const suggestedVariables = useMemo(
@@ -158,7 +178,7 @@ const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
   };
 
   const handleSuggestionClick = (variable) => {
-    setPersonalizeForm({ label: variable, value: "" });
+    setPersonalizeForm({ label: variable, value: lastPersonalization[variable] || "" });
     setShowPersonalization(true);
   };
 
@@ -297,6 +317,7 @@ const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
               onCancel={handlePersonalizationCancel}
               form={personalizeForm}
               setForm={setPersonalizeForm}
+              lastPersonalization={lastPersonalization}
             />
           )}
         </AnimatePresence>

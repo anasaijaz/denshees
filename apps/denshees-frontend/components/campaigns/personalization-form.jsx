@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 
-export function PersonalizationForm({ onSave, onCancel, form, setForm }) {
+export function PersonalizationForm({ onSave, onCancel, form, setForm, lastPersonalization = {} }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(form);

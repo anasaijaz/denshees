@@ -133,18 +133,18 @@ export default function CampaignLayout({ children }) {
     <div className="space-y-6">
       <div className="header">
         {/* Back button and campaign title */}
-        <div className="flex items-center space-x-4">
-          <Link href="/campaigns">
+        <div className="flex items-center gap-2 min-w-0">
+          <Link href="/campaigns" className="shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <ArrowLeftIcon className="w-[18px] h-[18px]" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl md:text-2xl font-bold truncate min-w-0">
             {isLoading
               ? "Loading..."
               : currentCampaign?.title || "Campaign Details"}
           </h1>
-          {currentCampaign && <StatusChip status={currentCampaign.status} />}
+          {currentCampaign && <StatusChip status={currentCampaign.status} className="shrink-0" />}
         </div>
 
         {/* Error message */}
@@ -155,15 +155,16 @@ export default function CampaignLayout({ children }) {
         )}
 
         {/* Tabs and action button */}
-        <div className="border-black">
-          <div className="flex items-center justify-between">
-            <div className="flex border-b border-black">
+        <div>
+          <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-2">
+            {/* Tabs — scrollable on mobile */}
+            <div className="flex border-b border-black overflow-x-auto scrollbar-none">
               {tabs.map((tab) => (
                 <Link
                   key={tab.name}
                   id={tab.tourId}
                   href={tab.href}
-                  className={`inline-flex items-center px-4 py-2 border-b-2 text-sm font-medium ${
+                  className={`inline-flex items-center px-3 md:px-4 py-2 border-b-2 text-sm font-medium whitespace-nowrap ${
                     isTabActive(tab.href)
                       ? "border-black text-black"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -175,7 +176,7 @@ export default function CampaignLayout({ children }) {
             </div>
 
             {currentCampaign && (
-              <div className="mr-4">
+              <div className="shrink-0">
                 {!hasEmails && currentCampaign.status !== "RUNNING" ? (
                   <TooltipProvider>
                     <Tooltip>
@@ -184,7 +185,8 @@ export default function CampaignLayout({ children }) {
                           <Button
                             disabled={true}
                             variant="default"
-                            className="opacity-70"
+                            size="sm"
+                            className="opacity-70 w-full md:w-auto"
                           >
                             <PlayIcon className="w-4 h-4 mr-2" />
                             Start Campaign
@@ -203,6 +205,8 @@ export default function CampaignLayout({ children }) {
                   <Button
                     onClick={handleStatusToggle}
                     disabled={isUpdatingStatus}
+                    size="sm"
+                    className="w-full md:w-auto"
                     variant={
                       currentCampaign.status === "RUNNING"
                         ? "destructive"
