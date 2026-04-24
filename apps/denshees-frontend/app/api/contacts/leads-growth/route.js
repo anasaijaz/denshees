@@ -13,9 +13,12 @@ export async function GET(request) {
   }
 
   try {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    oneMonthAgo.setHours(0, 0, 0, 0);
+    // Use UTC dates throughout to avoid timezone mismatches
+    const todayUTCStr = new Date().toISOString().split("T")[0];
+    const todayUTC = new Date(todayUTCStr + "T00:00:00.000Z");
+
+    const oneMonthAgo = new Date(todayUTC);
+    oneMonthAgo.setUTCMonth(oneMonthAgo.getUTCMonth() - 1);
 
     const records = await prisma.campaignEmail.findMany({
       where: {
@@ -26,7 +29,7 @@ export async function GET(request) {
       orderBy: { created: "asc" },
     });
 
-    // Group by date
+    // Group by UTC date
     const countsByDate = {};
     for (const record of records) {
       const date = record.created.toISOString().split("T")[0];
@@ -35,15 +38,12 @@ export async function GET(request) {
       }
     }
 
-    // Fill in every day from 1 month ago to today
+    // Fill in every UTC day from one month ago to today (inclusive)
     const data = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     for (
       let d = new Date(oneMonthAgo);
-      d <= today;
-      d.setDate(d.getDate() + 1)
+      d <= todayUTC;
+      d.setUTCDate(d.getUTCDate() + 1)
     ) {
       const key = d.toISOString().split("T")[0];
       data.push({ date: key, count: countsByDate[key] || 0 });

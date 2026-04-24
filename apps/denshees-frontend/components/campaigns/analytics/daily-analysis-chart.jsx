@@ -30,9 +30,8 @@ ChartJS.register(
 // Helper function to convert date strings to readable format
 function formatDate(dateString) {
   if (!dateString) return "";
-
-  const [year, month, day] = dateString.split("-");
-  return `${day}-${month}-${year.slice(-2)}`;
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
 const DailyAnalysisChart = ({ campaignId, dailyData, todayData }) => {
@@ -54,11 +53,6 @@ const DailyAnalysisChart = ({ campaignId, dailyData, todayData }) => {
     }
 
     // Extract emails opened data
-    const emailsOpened = dailyData.map((item) => item.opened || 0);
-    if (todayData?.data?.opened_sum !== undefined) {
-      emailsOpened.push(todayData.data.opened_sum);
-    }
-
     // Extract emails sent data
     const emailsSent = dailyData.map((item) => item.emails_sent || 0);
     if (todayData?.data?.stages_sum !== undefined) {
@@ -68,14 +62,6 @@ const DailyAnalysisChart = ({ campaignId, dailyData, todayData }) => {
     setChartData({
       labels,
       datasets: [
-        {
-          label: "Emails Opened",
-          data: emailsOpened,
-          borderColor: "rgb(0, 0, 0)",
-          backgroundColor: "rgba(147, 197, 253, 0.5)",
-          fill: true,
-          tension: 0.4,
-        },
         {
           label: "Emails Sent",
           data: emailsSent,
@@ -112,8 +98,10 @@ const DailyAnalysisChart = ({ campaignId, dailyData, todayData }) => {
         },
       },
       x: {
-        grid: {
-          display: false,
+        grid: { display: false },
+        ticks: {
+          font: { size: 10 },
+          maxRotation: 0,
         },
       },
     },
