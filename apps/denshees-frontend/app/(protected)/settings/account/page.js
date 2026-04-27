@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SaveFloppyIcon, UserIcon } from "mage-icons-react/bulk";
+import { SaveFloppyIcon, UserIcon, EyeIcon, EyeOffIcon } from "mage-icons-react/bulk";
 import { ReloadIcon } from "mage-icons-react/stroke";
+import { useState } from "react";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import useSWRMutation from "swr/mutation";
@@ -33,6 +34,8 @@ export default function AccountSettingsPage() {
 }
 
 function AccountSettings() {
+  const [showApiKey, setShowApiKey] = useState(false);
+
   // Setup react-hook-form
   const {
     register,
@@ -44,6 +47,7 @@ function AccountSettings() {
     defaultValues: {
       name: "",
       username: "",
+      millionVerifierApiKey: "",
     },
   });
 
@@ -76,6 +80,7 @@ function AccountSettings() {
     if (userData) {
       setValue("name", userData.name || "");
       setValue("username", userData.username || "");
+      setValue("millionVerifierApiKey", userData.millionVerifierApiKey || "");
     }
   }, [userData, setValue]);
 
@@ -84,6 +89,7 @@ function AccountSettings() {
       await updateAccount({
         name: data.name,
         username: data.username,
+        millionVerifierApiKey: data.millionVerifierApiKey || null,
       });
     } catch (error) {
       console.error("Error updating account:", error);
@@ -174,6 +180,45 @@ function AccountSettings() {
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="millionVerifierApiKey">
+              MillionVerifier API Key
+            </Label>
+            <div className="relative">
+              <Input
+                id="millionVerifierApiKey"
+                type={showApiKey ? "text" : "password"}
+                placeholder="Enter your MillionVerifier API key"
+                {...register("millionVerifierApiKey")}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                tabIndex={-1}
+              >
+                {showApiKey ? (
+                  <EyeOffIcon className="h-4 w-4" />
+                ) : (
+                  <EyeIcon className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              Used to verify email addresses when adding leads. Get your key at{" "}
+              <a
+                href="https://app.millionverifier.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                millionverifier.com
+              </a>
+              .
+            </p>
           </div>
 
           <div className="flex justify-end">

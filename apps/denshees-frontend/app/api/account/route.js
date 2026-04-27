@@ -24,6 +24,7 @@ export async function GET(request) {
         avatar: true,
         created: true,
         updated: true,
+        millionVerifierApiKey: true,
       },
     });
 
@@ -59,6 +60,9 @@ export async function PATCH(request) {
     if (data.password && data.password.trim() !== "") {
       updateData.password = await bcrypt.hash(data.password, 12);
     }
+    if (data.millionVerifierApiKey !== undefined) {
+      updateData.millionVerifierApiKey = data.millionVerifierApiKey || null;
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -71,6 +75,7 @@ export async function PATCH(request) {
         avatar: true,
         created: true,
         updated: true,
+        millionVerifierApiKey: true,
       },
     });
 

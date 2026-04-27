@@ -29,6 +29,8 @@ model User {
   created   DateTime @default(now())
   updated   DateTime @updatedAt
 
+  millionVerifierApiKey String? @map("million_verifier_api_key")
+
   campaigns          Campaign[]
   emailCredentials   EmailCredential[]
   creditTransactions CreditTransaction[]

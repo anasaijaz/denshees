@@ -18,10 +18,11 @@ import { post } from "@/lib/apis";
 import { mutate } from "swr";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Trash2Icon } from "mage-icons-react/bulk";
+import { Trash2Icon, CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from "mage-icons-react/bulk";
 import { AnimatePresence, motion } from "framer-motion";
 import { PersonalizationForm } from "./personalization-form";
 import fetcher from "@/lib/fetcher";
+import instance from "@/lib/axios";
 
 /**
  * Extract unique personalization variable names from pitch messages and subjects.
@@ -52,6 +53,16 @@ const leadSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
+const VERIFY_RESULT_CONFIG = {
+  ok:          { label: "Valid",       badgeClass: "bg-green-100 text-green-800 border-green-300",   Icon: CheckCircleIcon,        btnClass: "border-green-600 text-green-700 bg-green-50 hover:bg-green-100" },
+  catch_all:   { label: "Catch-all",   badgeClass: "bg-yellow-100 text-yellow-800 border-yellow-300", Icon: ExclamationTriangleIcon, btnClass: "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100" },
+  unknown:     { label: "Unknown",     badgeClass: "bg-gray-100 text-gray-700 border-gray-300",       Icon: ExclamationTriangleIcon, btnClass: "border-gray-400 text-gray-600 bg-gray-50 hover:bg-gray-100" },
+  invalid:     { label: "Invalid",     badgeClass: "bg-red-100 text-red-800 border-red-300",          Icon: ExclamationCircleIcon,   btnClass: "border-red-600 text-red-700 bg-red-50 hover:bg-red-100" },
+  disposable:  { label: "Disposable",  badgeClass: "bg-orange-100 text-orange-800 border-orange-300", Icon: ExclamationCircleIcon,   btnClass: "border-orange-500 text-orange-700 bg-orange-50 hover:bg-orange-100" },
+  unverified:  { label: "Unverified",  badgeClass: "bg-gray-100 text-gray-700 border-gray-300",       Icon: ExclamationTriangleIcon, btnClass: "border-gray-400 text-gray-600 bg-gray-50 hover:bg-gray-100" },
+  error:       { label: "Error",       badgeClass: "bg-red-100 text-red-800 border-red-300",          Icon: ExclamationCircleIcon,   btnClass: "border-red-600 text-red-700 bg-red-50 hover:bg-red-100" },
+};
+
 const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
   const [leadData, setLeadData] = useState({
     name: "",
@@ -64,7 +75,31 @@ const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
     label: "",
     value: "",
   });
+  const [verifyStatus, setVerifyStatus] = useState(null); // null | "loading" | result object
   const defaultsApplied = useRef(false);
+
+  // Fetch user account to check if MillionVerifier key is configured
+  const { data: accountData } = useSWR(open ? "/api/account" : null, fetcher);
+  const hasVerifierKey = !!accountData?.millionVerifierApiKey;
+
+  // Reset verification when email changes
+  useEffect(() => {
+    setVerifyStatus(null);
+  }, [leadData.email]);
+
+  const handleVerifyEmail = async () => {
+    if (!leadData.email) return;
+    setVerifyStatus("loading");
+    try {
+      const res = await instance.get(
+        `/api/verify-email?email=${encodeURIComponent(leadData.email)}`,
+      );
+      setVerifyStatus(res);
+    } catch {
+      setVerifyStatus({ result: "error" });
+      toast.error("Email verification failed");
+    }
+  };
 
   // Fetch pitches to extract personalization variables
   const { data: pitchesData } = useSWR(
@@ -88,7 +123,10 @@ const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
   }, [contactsData]);
 
   useEffect(() => {
-    if (!open) defaultsApplied.current = false;
+    if (!open) {
+      defaultsApplied.current = false;
+      setVerifyStatus(null);
+    }
   }, [open]);
 
   // Extract unique variable names from all pitch messages/subjects
@@ -216,16 +254,43 @@ const AddLeadDialog = ({ open = false, setOpen, campaign, onSuccess }) => {
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    value={leadData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  />
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={leadData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                    />
+                    {hasVerifierKey && (() => {
+                      const resultKey = verifyStatus && verifyStatus !== "loading" ? verifyStatus.result : null;
+                      const config = resultKey ? VERIFY_RESULT_CONFIG[resultKey] : null;
+                      const ResultIcon = config?.Icon;
+                      return (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={config ? undefined : handleVerifyEmail}
+                          disabled={!leadData.email || verifyStatus === "loading"}
+                          className={`shrink-0 w-24 h-10 justify-center border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1.5 transition-colors ${config ? config.btnClass + " border pointer-events-none" : ""}`}
+                        >
+                          {verifyStatus === "loading" ? (
+                            <span className="animate-pulse">...</span>
+                          ) : ResultIcon ? (
+                            <>
+                              <ResultIcon className="h-4 w-4" />
+                              <span>{config.label}</span>
+                            </>
+                          ) : (
+                            "Verify"
+                          )}
+                        </Button>
+                      );
+                    })()}
+                  </div>
                 </div>
 
                 {formError && (
